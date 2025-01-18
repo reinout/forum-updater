@@ -1,3 +1,6 @@
+[build-system]
+requires = ["setuptools>=69"]
+
 [project]
 name = "forum-updater"
 version = "0.1.0"
@@ -23,3 +26,6 @@ release = false
 venvPath = "."
 venv = ".venv"
 include = "src"
+
+[tool.uv.sources]
+forum-updater = { workspace = true }
