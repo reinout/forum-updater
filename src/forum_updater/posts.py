@@ -102,7 +102,7 @@ def update(folder: Path):
 
         form = {
             "titel": title.encode(encoding),
-            "nachricht": new_text.encode(encoding),
+            "nachricht": new_text.encode(encoding, "xmlcharrefreplace"),
             "Submit": "speichern",
             "unique": unique,
         }
