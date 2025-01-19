@@ -1,11 +1,26 @@
 import json
 import logging
+import re
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 
 from forum_updater import sites, threads
 from forum_updater.utils import USER_AGENT_HEADER
+
+ABLOAD_REGEX = re.compile(
+    r"""
+    (  # Start of match
+    https?             # http/https
+    ://abload.de       # domeinnaam
+    \S+?               # Non-whitespace characters, non-greedy
+    )                  # End of match
+    [\[\]]             # Start/end of a tag
+    """,
+    flags=re.VERBOSE | re.IGNORECASE,
+)
+NEW_LOCATION = "https://reinout.vanrees.org/abload/"
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +34,12 @@ def download(folder: Path):
     session = sites.login(site)
 
     page_files = sorted(pages_folder.glob("*.json"))
-    posts = []
+    post_ids = []
     for page_file in page_files:
-        posts += json.loads(page_file.read_text())
-    logger.info(f"Found {len(posts)} posts")
+        post_ids += json.loads(page_file.read_text())
+    logger.info(f"Found {len(post_ids)} posts")
 
-    for post_number, post_data in enumerate(posts, start=1):
-        post_id = post_data["post_id"]
-        # title = post_data["title"]
+    for post_number, post_id in enumerate(post_ids, start=1):
         output_file = posts_folder / f"{post_number:04d}.txt"
         if output_file.exists():
             logger.debug(
@@ -61,9 +74,7 @@ def update(folder: Path):
         posts += json.loads(page_file.read_text())
     logger.info(f"Found {len(posts)} posts")
 
-    for post_number, post_data in enumerate(posts, start=1):
-        post_id = post_data["post_id"]
-        # title = post_data["title"]
+    for post_number, post_id in enumerate(posts, start=1):
         original_file = posts_folder / f"{post_number:04d}.txt"
         assert original_file.exists()
         updated_file = posts_folder / f"{post_number:04d}.txt-updated"
@@ -102,3 +113,40 @@ def update(folder: Path):
         original_file.unlink()
         updated_file.unlink()
         logger.info(f"Removed {original_file} and the update: re-download everything")
+
+
+def _extract_image(url):
+    """Return image, when recognised"""
+    url = url.replace("http://abload.de/", "")
+    url = url.replace("https://abload.de/", "")
+    if url == "index.php":
+        return
+    if url.startswith("thumb/") or url.startswith("img/"):
+        return url.split("/")[1]
+    if url.startswith("image.php?img="):
+        return url.split("=")[1]
+    return
+
+
+def fix_abload(folder: Path):
+    posts_folder = folder / "posts"
+    assert posts_folder.exists()
+
+    post_files = sorted(posts_folder.glob("*.txt"))
+    for post_file in post_files:
+        logger.debug(f"Looking at {post_file}...")
+        original_contents = post_file.read_text()
+        new_contents = original_contents
+        matches = ABLOAD_REGEX.findall(original_contents)
+        for url in matches:
+            image = _extract_image(url)
+            if not image:
+                logger.warning(f"Unrecognised url: {url}")
+                continue
+            new_url = NEW_LOCATION + image
+            new_contents = new_contents.replace(url, new_url)
+            logger.debug(f"Replaced {url} with {new_url}")
+        if original_contents != new_contents:
+            new_file = post_file.parent / (post_file.name + "-updated")
+            new_file.write_text(new_contents)
+            logger.info(f"Wrote {new_file}")

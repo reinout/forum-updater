@@ -81,14 +81,14 @@ def download(folder: Path):
         for post in posts:
             post_id = post["id"]
             post_id = post_id.lstrip("p")
-            title_line = post.find("h3")
-            title = title_line.find("a").string
+            # title_line = post.find("h3")
+            # title = title_line.find("a").string
             author_line = post.find("p", class_="author")
             for a in author_line.find_all("a"):
                 if a.string == site.username:
                     logger.debug(
-                        f"Found post {post_id} ({title}) by {site.username} on page {page_number}"
+                        f"Found post {post_id} by {site.username} on page {page_number}"
                     )
-                    output.append({"post_id": post_id, "title": title})
+                    output.append(post_id)
         output_file.write_text(json.dumps(output, indent=2))
         logger.info(f"Wrote {output_file}")
