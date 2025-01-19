@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 class Thread(BaseModel):
     first_page_url: str
     num_pages: int
+    thread_id: str = ""
 
 
 def folder_is_thread(folder: Path) -> bool:
@@ -29,7 +30,14 @@ def thread_config(folder: Path) -> Thread:
     config_file = folder / CONFIG_FILENAME
     logger.debug(f"Reading {config_file}...")
     config = tomllib.loads(config_file.read_text())
-    return Thread.model_validate(config)
+    result = Thread.model_validate(config)
+    # Calculate thread id before returning the result
+    page_part = result.first_page_url.split("/")[-1]
+    # t134944f64-RE-text.html
+    id = page_part.split("-")[0]
+    id = id.lstrip("t")
+    result.thread_id = id
+    return result
 
 
 def page_urls(site: sites.Site, thread: Thread) -> list[str]:
@@ -48,11 +56,9 @@ def page_urls(site: sites.Site, thread: Thread) -> list[str]:
 
 
 def download(folder: Path):
-    thread = thread_config(folder)
     site = sites.site_config(folder.parent)
-    posts_folder = folder / "posts"
+    thread = thread_config(folder)
     pages_folder = folder / "pages"
-    posts_folder.mkdir(exist_ok=True)
     pages_folder.mkdir(exist_ok=True)
     session = sites.login(site)
 
@@ -75,6 +81,7 @@ def download(folder: Path):
         print(len(posts))
         for post in posts:
             post_id = post["id"]
+            post_id = post_id.lstrip("p")
             author_line = post.find("p", class_="author")
             for a in author_line.find_all("a"):
                 if a.string == site.username:

@@ -6,7 +6,7 @@ import pytest
 from forum_updater import threads
 
 THREAD_CONFIG = """\
-first_page_url = "http://somewhere/1234.html"
+first_page_url = "https://www.stummiforum.de/t134944f64-RE-text.html"
 num_pages = 20
 """
 
@@ -31,3 +31,9 @@ def test_thread_config2(tmp_path: Path):
     (tmp_path / "thread.toml").write_text(THREAD_CONFIG)
     config = threads.thread_config(tmp_path)
     assert config.num_pages == 20
+
+
+def test_thread_config3(tmp_path: Path):
+    (tmp_path / "thread.toml").write_text(THREAD_CONFIG)
+    config = threads.thread_config(tmp_path)
+    assert config.thread_id == "134944f64"
