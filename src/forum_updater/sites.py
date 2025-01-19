@@ -1,11 +1,10 @@
-import requests
-import os
-from typing import Optional
 import logging
+import os
 import tomllib
 from enum import Enum
 from pathlib import Path
 
+import requests
 from pydantic import BaseModel
 
 CONFIG_FILENAME = "site.toml"
@@ -24,8 +23,8 @@ class Site(BaseModel):
     base_url: str
     username: str
     # Above: from config file. Below: filled in based on folder name.
-    name: Optional[str] = None
-    password: Optional[str] = None
+    name: str | None = None
+    password: str | None = None
 
 
 def folder_is_site(folder: Path) -> bool:
@@ -50,11 +49,11 @@ def login(site: Site) -> requests.Session:
     """Log in and return session."""
     if site.site_type == SiteTypeEnum.stummi:
         logger.info("Logging in to stummiforum...")
-        form = {"name": site.username,
-                "pww": site.password,
-                "B1": "Login"}
+        form = {"name": site.username, "pww": site.password, "B1": "Login"}
         session = requests.Session()
-        response = session.post("https://www.stummiforum.de/login.php", data=form, headers=USER_AGENT_HEADER)
+        response = session.post(
+            "https://www.stummiforum.de/login.php", data=form, headers=USER_AGENT_HEADER
+        )
         response.raise_for_status()
         return session
     raise RuntimeError(f"Login for site type {site.site_type} not implemented")

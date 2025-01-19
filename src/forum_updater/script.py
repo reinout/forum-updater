@@ -1,10 +1,10 @@
-from pathlib import Path
-import typer
 import logging
 import sys
-from forum_updater import sites
-from forum_updater import threads
+from pathlib import Path
 
+import typer
+
+from forum_updater import sites, threads
 
 app = typer.Typer()
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ def download(folder: Path):
 
 
 @app.command()
-def update(folder:Path):
+def update(folder: Path):
     print("Not yet implemented")
 
 
