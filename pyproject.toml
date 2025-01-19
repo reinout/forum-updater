@@ -8,6 +8,7 @@ description = "Forum downloader/updater, mostly for restoring abload.de images"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "beautifulsoup4>=4.12.3",
     "pydantic>=2.10.5",
     "pytest>=8.3.4",
     "requests>=2.32.3",

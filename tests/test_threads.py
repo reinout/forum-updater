@@ -6,7 +6,7 @@ import pytest
 from forum_updater import threads
 
 THREAD_CONFIG = """\
-forum_id = "abc1234"
+first_page_url = "http://somewhere/1234.html"
 num_pages = 20
 """
 

@@ -7,9 +7,9 @@ from pathlib import Path
 import requests
 from pydantic import BaseModel
 
+from forum_updater.utils import USER_AGENT_HEADER
+
 CONFIG_FILENAME = "site.toml"
-USER_AGENT = "Personal abload-fixer github.com/reinout/forum-updater"
-USER_AGENT_HEADER = {"User-agent": USER_AGENT}
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ def folder_is_site(folder: Path) -> bool:
 def site_config(folder: Path) -> Site:
     """Return Site based on site config file in folder"""
     config_file = folder / CONFIG_FILENAME
+    logger.debug(f"Reading {config_file}...")
     config = tomllib.loads(config_file.read_text())
     site = Site.model_validate(config)
     site.name = folder.name
@@ -47,16 +48,15 @@ def site_config(folder: Path) -> Site:
 
 def login(site: Site) -> requests.Session:
     """Log in and return session."""
-    if site.site_type == SiteTypeEnum.stummi:
-        logger.info("Logging in to stummiforum...")
-        form = {"name": site.username, "pww": site.password, "B1": "Login"}
-        session = requests.Session()
-        response = session.post(
-            "https://www.stummiforum.de/login.php", data=form, headers=USER_AGENT_HEADER
-        )
-        response.raise_for_status()
-        return session
-    raise RuntimeError(f"Login for site type {site.site_type} not implemented")
+    assert site.site_type == SiteTypeEnum.stummi
+    logger.info("Logging in to stummiforum...")
+    form = {"name": site.username, "pww": site.password, "B1": "Login"}
+    session = requests.Session()
+    response = session.post(
+        "https://www.stummiforum.de/login.php", data=form, headers=USER_AGENT_HEADER
+    )
+    response.raise_for_status()
+    return session
 
 
 def debug_info(folder: Path):
