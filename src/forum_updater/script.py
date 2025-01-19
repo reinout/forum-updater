@@ -25,8 +25,16 @@ def download(folder: Path, verbose: bool = False):
 
 
 @app.command()
-def update(folder: Path):
-    print("Not yet implemented")
+def update(folder: Path, verbose: bool = False):
+    level = verbose and logging.DEBUG or logging.INFO
+    logging.basicConfig(level=level)
+    if sites.folder_is_site(folder):
+        logger.warning("Specify a subfolder (=thread) for an actual update action.")
+        sites.debug_info(folder)
+    elif threads.folder_is_thread(folder):
+        posts.update(folder)
+    else:
+        sys.exit("No site or thread folder found")
 
 
 if __name__ == "__main__":
