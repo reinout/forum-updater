@@ -75,13 +75,6 @@ def update(folder: Path):
         actual_thread_id, forum_id = thread.thread_id.split("f")
 
         edit_url = f"https://www.stummiforum.de/msg.php?forum={forum_id}&Thread={actual_thread_id}&msg={post_id}"
-        # Is probably OK, though the url below has extra params.
-        # https://www.stummiforum.de/msg.php?board=851973&Pedit=1&Thread=134944&msg=1533437
-
-        # titel
-        # nachricht
-        # Submit = "speichern"
-        # unique = 86a80a14a117-678cf12d83702
 
         edit_page = session.get(edit_url, headers=USER_AGENT_HEADER)
         edit_page.raise_for_status()
