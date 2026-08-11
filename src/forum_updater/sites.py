@@ -1,7 +1,7 @@
 import logging
 import os
 import tomllib
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 import requests
@@ -14,7 +14,7 @@ CONFIG_FILENAME = "site.toml"
 logger = logging.getLogger(__name__)
 
 
-class SiteTypeEnum(str, Enum):
+class SiteTypeEnum(StrEnum):
     stummi = "stummi"
 
 
